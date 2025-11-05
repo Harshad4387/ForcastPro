@@ -1,0 +1,45 @@
+<div class="container-fluid p-0 bg-light min-vh-100">
+  <!-- Header -->
+  <div class="py-4 text-center bg-white shadow-sm mb-4">
+    <h1 class="display-5 fw-bold text-primary mb-1">🧱 Raw Material Management</h1>
+    <p class="text-muted fs-5 mb-0">Monitor and manage all raw materials in your inventory efficiently.</p>
+  </div>
+
+  <!-- Full-width Table Section -->
+  <div class="w-100">
+    <div class="card shadow-lg border-0 rounded-0">
+      <div class="card-body p-0">
+        <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+          <h2 class="h4 fw-semibold text-dark mb-0">Raw Materials Inventory</h2>
+          <span class="badge bg-primary-subtle text-primary fs-6">
+            Total Items: {{ rawMaterialsList.length }}
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle mb-0 w-100">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>#</th>
+                <th>Material Name</th>
+                <th>Quantity</th>
+                <th>Cost</th>
+                <th>Supplier</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mat of rawMaterialsList; let i = index">
+                <td class="text-center fw-medium">{{ i + 1 }}</td>
+                <td class="fw-semibold text-dark">{{ mat.name }}</td>
+                <td class="text-center">{{ mat.quantity }} {{ mat.unit }}</td>
+                <td class="text-center text-success fw-medium">{{ mat.cost }}</td>
+                <td>{{ mat.supplier }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+body {
+  overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  margin: 0;
+}
+
+/* Wrapper to contain sidebar and content */
+#wrapper {
+  display: flex;
+}
+
+/* Sidebar styling */
+#sidebar {
+  width: 220px;
+  background: #fff;
+  color: #333;
+  border-right: 1px solid #dee2e6;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: margin-left 0.3s;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+#sidebar.toggled {
+  margin-left: -200px; /* Hide sidebar */
+}
+
+#sidebar .sidebar-header {
+  padding: 1rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#sidebar ul.components {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#sidebar ul li {
+  padding: 12px 20px;
+  font-size: 1rem;
+  transition: 0.2s;
+}
+
+#sidebar ul li:hover {
+  background: #f1f1f1;
+}
+
+#sidebar ul li a {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Page content spacing */
+#content {
+  margin-left: 220px;
+  padding: 2rem;
+  transition: margin-left 0.3s;
+}
+
+#content.toggled {
+  margin-left: 20px; /* Adjust if you want content to move a little when sidebar hides */
+}
