@@ -3,22 +3,42 @@ const express = require("express");
 const app = express();
 const morgan = require('morgan');
 const connect = require("./db/db");
-const auth = require("./routes/auth/auth.route");
-const store = require("./routes/store/inward.route");
-const admin = require("./routes/Admin/rawmaterail.route");
 const cors = require('cors');
 connect();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
-app.use('/api/auth',auth);
+
+
 app.get('/', (req,res)=>{
     res.status(200).json('server is running fine');
     console.log("yes done");
     
 })
-app.use("/api/store",store);
-app.use("/api/admin",admin);
+const auth = require("./routes/auth/auth.route");
+app.use('/api/auth',auth);
+
+const store_rawMaterial = require("./routes/store/RawMaterial.route");
+const store_Product = require("./routes/store/Product.route");
+const PostMan = require("./routes/store/PostMan.route")
+const store_request = require("./routes/store/request.route");
+app.use("/api/store/RawMaterial",store_rawMaterial);
+app.use("/api/store/Product" , store_Product)
+app.use("/api/store/postman",PostMan)
+app.use("/api/store/request",store_request)
+
+const admin = require("./routes/Admin/admin.route");
+app.use("/api/admin" ,admin);
+
+const production = require("./routes/Production/request.route");
+app.use("/api/production" ,production );
+
+
+const sales = require("./routes/Sales/product.route")
+app.use("/api/sales" , sales );
+
+const common = require("./routes/common/common.route");
+app.use("/api/common" , common);
 const port = process.env.PORT;
 app.listen(port, ()=>{
     console.log('server is running on port 3000 ~ built by harshu');
