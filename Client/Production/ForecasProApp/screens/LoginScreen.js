@@ -26,14 +26,12 @@ export default function LoginScreen({ navigation }) {
         password,
       });
 
-    //   console.log("✅ Login Response:", response.data);
+
 
       if (response.data.success) {
-        // Store token (optional)
+      
         await AsyncStorage.setItem("authToken", response.data.token);
         const token = await AsyncStorage.getItem("authToken");
-       console.log(token);
-        // Navigate to main screen
         navigation.replace("Main");
       } else {
         setSnackMsg(response.data.message || "Invalid credentials");

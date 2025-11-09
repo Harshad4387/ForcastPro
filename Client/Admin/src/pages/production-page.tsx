@@ -153,6 +153,7 @@ const ProductionPage = () => {
           role: "productionworker",
           password: "",
         });
+      setWorkers((prev) => [...prev, added]);
       } else {
         alert(response.data.message || "Failed to add worker.");
       }

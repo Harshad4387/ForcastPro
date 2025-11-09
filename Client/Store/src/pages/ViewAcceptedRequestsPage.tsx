@@ -27,7 +27,7 @@ const ViewAcceptedRequestsPage = () => {
         `${BASE_URL}/store/request/get-all-accepted`,
         axiosConfig
       );
-     console.log("✅ Accepted Requests Response:", response.data);
+      console.log("✅ Accepted Requests Response:", response.data);
       setRequests(response.data.data || []);
     } catch (error) {
       console.error("Error fetching accepted requests:", error);
@@ -37,23 +37,22 @@ const ViewAcceptedRequestsPage = () => {
   };
 
   const handleCollect = async (requestId: string) => {
-  try {
-    setCollectLoading(requestId);
+    try {
+      setCollectLoading(requestId);
 
-    await axios.put(
-      `${BASE_URL}/store/request/collected`,
-      { requestId }, // ✅ sending id in req.body
-      axiosConfig
-    );
+      await axios.put(
+        `${BASE_URL}/store/request/collected`,
+        { requestId }, // ✅ sending id in req.body
+        axiosConfig
+      );
 
-    fetchRequests(); // ✅ refresh list
-  } catch (error) {
-    console.error("Error collecting request:", error);
-  } finally {
-    setCollectLoading(null);
-  }
-};
-
+      fetchRequests(); // ✅ refresh list
+    } catch (error) {
+      console.error("Error collecting request:", error);
+    } finally {
+      setCollectLoading(null);
+    }
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -98,9 +97,7 @@ const ViewAcceptedRequestsPage = () => {
                 </p>
                 <p>
                   <strong>Accepted On:</strong>{" "}
-                  {new Date(req.
-startedAt
-).toLocaleString()}
+                  {new Date(req.startedAt).toLocaleString()}
                 </p>
 
                 <Button
