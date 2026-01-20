@@ -76,12 +76,11 @@ const allCompleted = async (req, res) => {
   }
 };
 
-
 const received = async (req, res) => {
   try {
     const { requestId } = req.body;
 
-    // ✅ Validate input
+  
     if (!requestId) {
       return res.status(400).json({
         success: false,
@@ -89,7 +88,7 @@ const received = async (req, res) => {
       });
     }
 
-    // ✅ Find the production request
+  
     const request = await ProductionRequest.findById(requestId);
     if (!request) {
       return res.status(404).json({
@@ -98,7 +97,13 @@ const received = async (req, res) => {
       });
     }
 
-    // ✅ Ensure the request is completed before marking received
+    if (request.status === "received") {
+      return res.status(400).json({
+        success: false,
+        message: "Request already marked as received",
+      });
+    }
+
     if (request.status !== "completed") {
       return res.status(400).json({
         success: false,
@@ -106,7 +111,7 @@ const received = async (req, res) => {
       });
     }
 
-    // ✅ Find the related product
+   
     const product = await Product.findById(request.product);
     if (!product) {
       return res.status(404).json({
@@ -115,15 +120,15 @@ const received = async (req, res) => {
       });
     }
 
-    // ✅ Update product quantity (add produced items)
-    const newQuantity = product.quantity + request.quantity;
-    product.quantity = newQuantity;
+ 
+    product.quantity += request.quantity;
     await product.save();
 
-    // ✅ Update request status to "received"
+ 
     request.status = "received";
     await request.save();
 
+   
     res.status(200).json({
       success: true,
       message: "Production request marked as received and product quantity updated successfully",
@@ -144,5 +149,4 @@ const received = async (req, res) => {
     });
   }
 };
-
 module.exports = { getAllProducts ,allCompleted,received};

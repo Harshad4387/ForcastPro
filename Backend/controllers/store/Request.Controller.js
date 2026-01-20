@@ -1,95 +1,80 @@
 const ProductionRequest = require("../../models/Request");
 const Product = require("../../models/Product.model");
 const User = require("../../models/user.model");
-const {checkMaterialAvailability} = require("../../utils/Sastistical_Inference/CheckMaterial");
+// const {checkMaterialAvailability} = require("../../utils/Sastistical_Inference/CheckMaterial");
 
-// const createRequest = async (req, res) => {
-//   try {
-//     const { productId, quantity } = req.body;
-//     console.log(req.body);
-//     if (!productId || !quantity) {
-//       return res.status(200).json({
-//         success: false,
-//         message: "Both 'productId' and 'quantity' are required",
-//       });
-//     }
+const createRequest = async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    console.log(req.body);
 
-//     if (quantity <= 0) {
-//       return res.status(200).json({
-//         success: false,
-//         message: "Quantity must be greater than 0",
-//       });
-//     }
+    // ✅ Validate input
+    if (!productId || !quantity) {
+      return res.status(200).json({
+        success: false,
+        message: "Both 'productId' and 'quantity' are required",
+      });
+    }
 
-//     // ✅ Check if product exists
-//     const productDoc = await Product.findById(productId);
-//     if (!productDoc) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Product not found",
-//       });
+    if (quantity <= 0) {
+      return res.status(200).json({
+        success: false,
+        message: "Quantity must be greater than 0",
+      });
+    }
 
-//     }
-//     console.log(productDoc)
+    // ✅ Check if product exists
+    const productDoc = await Product.findById(productId);
+    if (!productDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
 
-//     // ✅ Get user
-//     const userId = req.user.id;
-//     const userDoc = await User.findById(userId);
-//     if (!userDoc) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found or unauthorized",
-//       });
-//     }
+    // ✅ Get logged-in user
+    const userId = req.user.id;
+    const userDoc = await User.findById(userId);
+    if (!userDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found or unauthorized",
+      });
+    }
 
-   
-//     const stockCheck = await checkMaterialAvailability(productId, quantity);
+    // ✅ Create new production request (no stock check)
+    const newRequest = new ProductionRequest({
+      product: productDoc._id,
+      requestedBy: userDoc._id,
+      quantity,
+      status: "pending",
+    });
 
-//     if (!stockCheck.success) {
-//       return res.status(500).json({
-//         success: false,
-//         message: stockCheck.message,
-//       });
-//     }
+    await newRequest.save();
 
-//     if (!stockCheck.isSufficient) {
-//       return res.status(200).json({
-//         success: false,
-//         message: stockCheck.message,
-//         canProduce: stockCheck.canProduce,
-//       });
-//     }
+    // ✅ Populate data for clean response
+    await newRequest.populate([
+      { path: "product", select: "name quantity assemblyTime" },
+      { path: "requestedBy", select: "name email role" },
+    ]);
 
-//     // ✅ Create new production request
-//     const newRequest = new ProductionRequest({
-//       product: productDoc._id,
-//       requestedBy: userDoc._id,
-//       quantity,
-//       status: "pending",
-//     });
+    // ✅ Send response
+    res.status(201).json({
+      success: true,
+      message: "Production request created successfully",
+      data: newRequest,
+    });
 
-//     await newRequest.save();
+  } catch (error) {
+    console.error("Error creating production request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while creating production request",
+      error: error.message,
+    });
+  }
+};
 
-//     // ✅ Populate for response
-//     await newRequest.populate([
-//       { path: "product", select: "name quantity assemblyTime" },
-//       { path: "requestedBy", select: "name email role" },
-//     ]);
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Production request created successfully",
-//       data: newRequest,
-//     });
-//   } catch (error) {
-//     console.error("Error creating production request:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error while creating production request",
-//       error: error.message,
-//     });
-//   }
-// };
 
 const getAllRequests = async (req, res) => {
   try {
@@ -204,94 +189,41 @@ const collectedMaterial = async (req, res) => {
   }
 };
 
-const validateStockBeforeRequest = async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
+// const validateStockBeforeRequest = async (req, res) => {
+//   try {
+//     const { productId, quantity } = req.body;
 
-    if (!productId || !quantity) {
-      return res.status(400).json({
-        success: false,
-        message: "Both productId and quantity are required",
-      });
-    }
+//     if (!productId || !quantity) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Both productId and quantity are required",
+//       });
+//     }
 
-    const stockCheck = await checkMaterialAvailability(productId, quantity);
+//     const stockCheck = await checkMaterialAvailability(productId, quantity);
 
-    if (!stockCheck.success) {
-      return res.status(500).json({
-        success: false,
-        message: stockCheck.message,
-      });
-    }
+//     if (!stockCheck.success) {
+//       return res.status(500).json({
+//         success: false,
+//         message: stockCheck.message,
+//       });
+//     }
 
-    res.status(200).json({
-      success: true,
-      isSufficient: stockCheck.isSufficient,
-      message: stockCheck.message,
-    });
-  } catch (error) {
-    console.error("Error validating material stock:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error validating material stock",
-      error: error.message,
-    });
-  }
-};
-const createRequest = async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
+//     res.status(200).json({
+//       success: true,
+//       isSufficient: stockCheck.isSufficient,
+//       message: stockCheck.message,
+//     });
+//   } catch (error) {
+//     console.error("Error validating material stock:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error validating material stock",
+//       error: error.message,
+//     });
+//   }
+// };
 
-    if (!productId || !quantity || quantity <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid productId and positive quantity are required",
-      });
-    }
-
-    // ✅ Check product
-    const productDoc = await Product.findById(productId);
-    if (!productDoc)
-      return res.status(404).json({ success: false, message: "Product not found" });
-
-    // ✅ Get user
-    const userId = req.user.id;
-    const userDoc = await User.findById(userId);
-    if (!userDoc)
-      return res.status(404).json({ success: false, message: "User not found" });
-
-    // ✅ Check material stock
-    const stockCheck = await checkMaterialAvailability(productId, quantity);
-    if (!stockCheck.success || !stockCheck.isSufficient) {
-      return res.status(400).json({
-        success: false,
-        message: stockCheck.message,
-      });
-    }
-
-    // ✅ Create request
-    const newRequest = new ProductionRequest({
-      product: productId,
-      requestedBy: userId,
-      quantity,
-      status: "pending",
-    });
-    await newRequest.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Production request created successfully",
-      data: newRequest,
-    });
-  } catch (error) {
-    console.error("Error creating production request:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while creating production request",
-      error: error.message,
-    });
-  }
-};
 
 
 
@@ -301,5 +233,5 @@ module.exports = {
    getAllRequests,
     getAcceptedRequests,
     collectedMaterial,
-    validateStockBeforeRequest
+    
    };

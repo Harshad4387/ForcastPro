@@ -1,12 +1,12 @@
-const RawMaterial = require("../../models/RawMaterial.model");
-const Product = require("../../models/Product.model");
-const ProductMaterial = require("../../models/ProductComponent.model");
+const RawMaterial = require("../models/RawMaterial.model");
+const Product = require("../models/Product.model");
+const ProductMaterial = require("../models/ProductComponent.model");
 
 const addRawMaterialusingpostman = async (req, res) => {
   try {
     const materials = req.body;
 
-    // ✅ Validate array
+
     if (!Array.isArray(materials) || materials.length === 0) {
       return res.status(400).json({
         success: false,
@@ -14,7 +14,7 @@ const addRawMaterialusingpostman = async (req, res) => {
       });
     }
 
-    // ✅ Validate required fields manually
+  
     for (let i = 0; i < materials.length; i++) {
       const item = materials[i];
       if (!item.name) {
@@ -31,10 +31,10 @@ const addRawMaterialusingpostman = async (req, res) => {
       }
     }
 
-    // ✅ Try inserting; catch validation errors individually
+   
     try {
       const insertedMaterials = await RawMaterial.insertMany(materials, {
-        ordered: false, // continue inserting even if one fails
+        ordered: false, 
       });
 
       return res.status(201).json({
@@ -43,7 +43,6 @@ const addRawMaterialusingpostman = async (req, res) => {
         data: insertedMaterials,
       });
     } catch (insertError) {
-      // Detect if the error is from validation (enum, required fields, etc.)
       if (insertError.name === "ValidationError" || insertError.writeErrors) {
         const errors = [];
 
@@ -86,33 +85,34 @@ const addRawMaterialusingpostman = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { name, assemblyTime, totalComponents, remarks } = req.body;
+    const { productId, name, assemblyTime, totalComponents, remarks } = req.body;
 
-    
-    if (!name || !assemblyTime) {
+    if (!productId || !name || !assemblyTime) {
       return res.status(400).json({
         success: false,
-        message: "Both 'name' and 'assemblyTime' are required"
+        message: "'productId', 'name', and 'assemblyTime' are required"
       });
     }
 
     const newProduct = new Product({
+      productId,
       name,
       assemblyTime,
-      totalComponents,
-      remarks
+      totalComponents: totalComponents || 0,
+      remarks: remarks || ""
     });
 
     await newProduct.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Product added successfully",
       data: newProduct
     });
+
   } catch (error) {
     console.error("Error adding product:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while adding product",
       error: error.message
@@ -120,19 +120,20 @@ const addProduct = async (req, res) => {
   }
 };
 
+
+
+
 const addProductMaterial = async (req, res) => {
   try {
     const { product: productName, materials } = req.body;
 
-    // ✅ Validate product name
+
     if (!productName) {
       return res.status(400).json({
         success: false,
         message: "Product name is required",
       });
     }
-
-    // ✅ Validate materials array
     if (!materials || !Array.isArray(materials) || materials.length === 0) {
       return res.status(400).json({
         success: false,
@@ -140,7 +141,7 @@ const addProductMaterial = async (req, res) => {
       });
     }
 
-    // ✅ Validate each material field
+
     for (let i = 0; i < materials.length; i++) {
       const { uniqueId, quantity } = materials[i];
       if (uniqueId === undefined || quantity === undefined) {
@@ -151,7 +152,7 @@ const addProductMaterial = async (req, res) => {
       }
     }
 
-    // ✅ Find product by name
+  
     const productDoc = await Product.findOne({ name: productName });
     if (!productDoc) {
       return res.status(404).json({
@@ -162,15 +163,13 @@ const addProductMaterial = async (req, res) => {
 
     const materialsWithIds = [];
 
-    // ✅ Loop through materials
     for (let m of materials) {
-      // 🔹 Ignore raw materials with UniqueId = 0
+     
       if (m.uniqueId === 0) {
         console.log(`⏭️ Ignored material with UniqueId 0: ${m.rawMaterial}`);
         continue;
       }
 
-      // ✅ Find raw material by UniqueId
       const rawMaterialDoc = await RawMaterial.findOne({ UniqueId: m.uniqueId });
       if (!rawMaterialDoc) {
         return res.status(404).json({

@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const rawMaterialSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   UniqueId : {type : Number , required : true },
+  Pieces : {
+    type : Number ,
+    required : true 
+  },
   category: {
     type: String,
     enum: [
@@ -63,7 +67,6 @@ const rawMaterialSchema = new mongoose.Schema({
     ], 
     default: "-"
   },
-  size: { type: Number },
   supplier: {
     type : String,
     
